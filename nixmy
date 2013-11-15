@@ -92,5 +92,5 @@ nixmy-init() {
     trytorun git pull --rebase upstream master
     trytorun git branch "local"
     trytorun git checkout "local"
-    echo "INIT and UPDATE done, enjoy!"
+    echo "INIT done (now run nixmy-update), enjoy!"
 }
