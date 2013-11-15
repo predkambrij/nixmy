@@ -1,7 +1,31 @@
 #!/bin/sh
 
-export NIX_MY_PKGS='/home/matej/workarea/nixpkgs'
-export NIX_USER_PROFILE_DIR='/nix/var/nix/profiles/per-user/matej'
+# !!!MODIFY NEXT 3 LINES BEFORE RUNNING ANY COMMANDS!!!
+export NIX_MY_PKGS='/home/matej/workarea/nixpkgs'  # where the local repo is/will be after nixmy-init
+export NIX_USER_PROFILE_DIR='/nix/var/nix/profiles/per-user/matej'  # change your user name
+export NIX_MY_GITHUB='git://github.com/matejc/nixpkgs.git'  # your nixpkgs git repository
+
+
+# after running nixmy-init you will have nixpkgs directory in current working directory
+#
+# BRANCHES:
+#   local - where you will do your work and modifications
+#           this is also where you want to be where nixmy-rebuild is called
+#   master - this is where master branch of git://github.com/NixOS/nixpkgs.git is
+#
+# REMOTES:
+#   origin - $NIX_MY_GITHUB
+#   upstream - official repository git://github.com/NixOS/nixpkgs.git
+
+# before running nixmy-update make sure that you commit or stash changes
+# running nixmy-update will rebase from NixOS/nixpkgs to master and then checkout local branch back
+
+# every now and then you can update your $NIX_MY_GITHUB repository by pushing to it:
+# ex:
+#    git checkout master
+#    git push origin master
+# do not forget to checkout local branch after as this is your work branch
+
 
 export NIX_PATH="nixpkgs=$NIX_MY_PKGS:nixos=$NIX_MY_PKGS/nixos:nixos-config=/etc/nixos/configuration.nix:services=/etc/nixos/services"
 
@@ -52,10 +76,21 @@ nixmy-update() {
         local rev=`nixmy-revision`
         echo "rebasing 'local' to '$rev'"
         trytorun git rebase $rev
+        echo "UPDATE done, enjoy!"
     else
         git status
         echo "STAGE IS NOT CLEAN! CLEAR IT BEFORE UPDATE!"
         return 1
     fi
 
+}
+
+nixmy-init() {
+    trytorun git clone $NIX_MY_GITHUB nixpkgs
+    trytorun cd nixpkgs
+    trytorun git remote add upstream git://github.com/NixOS/nixpkgs.git
+    trytorun git pull --rebase upstream master
+    trytorun git branch "local"
+    trytorun git checkout "local"
+    echo "INIT and UPDATE done, enjoy!"
 }
