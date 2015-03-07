@@ -2,7 +2,8 @@
 
 # !!!MODIFY NEXT 3 LINES BEFORE RUNNING ANY COMMANDS!!!
 export NIX_MY_PKGS='/home/lojze/newhacks/nnixmy/pkgs/nixpkgs'  # where the local repo will be after nixmy-init (note, put /nixpkgs at the end - it will be created by git clone)
-export NIX_USER_PROFILE_DIR='/nix/var/nix/profiles/per-user/lojze'  # change your user name
+#export NIX_USER_PROFILE_DIR='/nix/var/nix/profiles/per-user/lojze'  # change your user name
+export NIX_USER_PROFILE_DIR='/nix/var/nix/profiles/per-user/loj'  # change your user name
 export NIX_MY_GITHUB='https://github.com/predkambrij/nixpkgs.git'  # your nixpkgs git repository
 export NIX_MY_LOGDIR='/home/lojze/newhacks/nixmy_logs'  # don't put "/" at the end
 export NIX_MY_CUR_CHAN_REV='cur_channel_rev'  # name of the file where current channel revision will be saved (used for logging in nixmy-rebuild)
@@ -39,7 +40,7 @@ alias nixmy-makeenv="nix-env -f '$NIX_MY_PKGS' -p $NIX_USER_PROFILE_DIR/makeenv 
 
 alias nixmy-cd="cd '$NIX_MY_PKGS'"
 
-alias nix-env="nix-env -f '$NIX_MY_PKGS'"
+alias nix-env="nix-env -f $NIX_MY_PKGS"
 
 # Sudo helper
 _asroot() {
@@ -68,7 +69,8 @@ nixmy-rebuild() {
 
 # Print latest Hydra's revision
 nixmy-revision() {
-  local rev=`wget -q  -S --output-document - http://nixos.org/channels/nixos-unstable/ 2>&1 | grep Location | awk -F '/' '{print $6}' | awk -F '.' '{print $3}'`
+  local rev=`wget -q  -S --output-document - http://nixos.org/channels/nixos-14.12/ 2>&1 | grep Location | awk -F '/' '{print $7}' | awk -F '.' '{print $4}'`
+  #local rev=`wget -q  -S --output-document - http://nixos.org/channels/nixos-unstable/ 2>&1 | grep Location | awk -F '/' '{print $6}' | awk -F '.' '{print $3}'`
   printf "%s" $rev
 }
 
@@ -79,13 +81,15 @@ nixmy-update() {
     if [ -z $diffoutput ]; then
         {
             echo "git diff is empty, preceding ..." &&
-            git checkout master &&
-            git pull --rebase upstream master &&
+            #git checkout master &&
+            #git pull --rebase upstream master &&
+            git fetch --all &&
+            
             git checkout "local" &&
-            local rev=`nixmy-revision` &&
-            echo "rebasing 'local' to '$rev'" &&
+            #local rev=`nixmy-revision` &&
+            #echo "rebasing 'local' to '$rev'" &&
 
-            git rebase $rev &&
+            git rebase remotes/upstream/release-14.12 &&
             if [ $? -eq 0 ]; then
                 # save last channel revision which will be used in track nixmy-rebuild
                 cur_dir=$(pwd)
